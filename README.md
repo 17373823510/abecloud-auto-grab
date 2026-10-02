@@ -70,8 +70,16 @@ cron */10 触发
 
 ## 部署指南
 
-1. **创建仓库**：建议用公开仓库（Actions 额度无限），把本项目文件全部上传  
-   （包括 `.github/workflows/grab.yml`）
+1. **创建仓库**：建议用公开仓库（Actions 额度无限）。捷径——用自带脚本一键建仓+推送：
+
+   ```bash
+   set GH_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx   # Classic token，勾选 repo 权限
+   python tools/bootstrap_github.py
+   ```
+
+   它会建仓 → 把 Workflow permissions 设为 write → 提交并推送。
+   已在网页手动建好空仓库则用 `python tools/bootstrap_github.py --remote-only`。
+   （手动上传亦可，务必包含 `.github/workflows/grab.yml`）
 2. **配置 Secrets**：仓库 Settings → Secrets and variables → Actions，添加：
    - `ABECLOUD_USERNAME`：阿贝云账号（手机号或邮箱）
    - `ABECLOUD_PASSWORD`：阿贝云密码
@@ -88,9 +96,13 @@ cron */10 触发
 8. **（可选）调整配置**：复制 `config.example.yaml` 为 `config.yaml`，  
    修改抢购页 URL、套餐名、心跳间隔等非敏感参数后提交
 
-> **注意**：`config.example.yaml` 中的 `login_url` / `grab_url` 为占位值，  
-> 部署前请改成阿贝云实际页面地址，并按真实页面校准 `modules/auth.py`、  
-> `modules/grabber.py` 中的选择器常量（选择器集中定义，均已注释标明）。
+> **URL 与选择器已按真实站点校准**（`https://www.abeiyun.com/login/`）：
+> 登录页为服务端渲染，表单为 `<form id="loginForm">`，
+> 账号 `#userName`、密码 `#passwordInput`、登录 `#loginSubmit`（`<input type=submit>`）；
+> 抢购页 `/control/#/freeServerList` 是 Vue hash 路由 SPA，
+> 故 `grabber.py` 在 goto 后专门等待 JS 渲染完成再判定。
+> 若站点改版，只需改 `auth.py` 的 `LOGIN_SELECTORS` 与 `grabber.py` 的 `GRAB_SELECTORS`，
+> 无需动业务代码。
 
 ---
 
@@ -188,6 +200,8 @@ abecloud-auto-grab/
 │   ├── browser.py               # Playwright 工厂
 │   └── utils.py                 # 时间/脱敏/清理工具
 ├── state/grab_state.json        # 持久化状态（提交到仓库）
+├── tools/
+│   └── bootstrap_github.py      # 一键建仓 + 推送（仅标准库）
 ├── tests/                       # 单元测试（pytest）
 └── logs/ screenshots/           # 运行时生成（不提交）
 ```
