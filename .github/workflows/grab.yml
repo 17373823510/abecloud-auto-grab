@@ -1,0 +1,63 @@
+# AbeCloud Auto-Grab 定时抢购 workflow
+# 每 10 分钟触发一次；成功后由 main.py 通过 GitHub API 自动禁用本 workflow
+name: Grab
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # GitHub 不保证精确，实际可能 10-25 分钟一次
+  workflow_dispatch: {}       # 允许手动触发（测试/调试）
+
+# 权限：写 contents 提交 state 文件；写 actions 禁用 workflow（成功后停止）
+permissions:
+  contents: write
+  actions: write
+
+# 并发控制：避免两次运行重叠（单次超 10 分钟时新一次排队而非并行）
+concurrency:
+  group: grab
+  cancel-in-progress: false
+
+jobs:
+  grab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip   # pip 依赖缓存，加速后续运行
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install Playwright Chromium
+        run: |
+          playwright install chromium
+          sudo playwright install-deps chromium
+
+      - name: Run grabber
+        env:
+          ABECLOUD_USERNAME: ${{ secrets.ABECLOUD_USERNAME }}
+          ABECLOUD_PASSWORD: ${{ secrets.ABECLOUD_PASSWORD }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          PUSHPLUS_WECHAT_ENABLED: ${{ vars.PUSHPLUS_WECHAT_ENABLED }}
+          PUSHPLUS_QQ_ENABLED: ${{ vars.PUSHPLUS_QQ_ENABLED }}
+          PUSHPLUS_SMS_ENABLED: ${{ vars.PUSHPLUS_SMS_ENABLED }}
+          # GITHUB_TOKEN / GITHUB_REPOSITORY / GITHUB_WORKFLOW_REF 自动注入
+        run: python main.py
+
+      # 抢购失败是常态；仅当进程异常退出（配置错误等）时上传失败截图供诊断
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-screenshots
+          path: screenshots/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -1,0 +1,11 @@
+{
+  "success": false,
+  "success_time": "",
+  "success_detail": "",
+  "last_attempt_time": "",
+  "last_result": "",
+  "attempt_count": 0,
+  "heartbeat_time": "",
+  "consecutive_failures": 0,
+  "last_heartbeat_commit": ""
+}

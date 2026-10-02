@@ -1,0 +1,34 @@
+# AbeCloud Auto-Grab 配置模板（复制为 config.yaml 后按需修改）
+# 注意：敏感信息（账号/密码/PushPlus token）一律走 GitHub Secrets 环境变量，
+# 不写入本文件。环境变量优先级高于本文件。
+
+abecloud:
+  login_url: "https://www.abeiyun.com/login/"   # 占位值：按实际站点修改
+  grab_url: "https://www.abeiyun.com/control/#/freeServerList"     # 占位值：按实际站点修改
+  target_plan: "立即开通"
+  headless: true              # Actions 上必须 true
+  timeout_ms: 60000
+  work_hours_only: false      # true 时仅在 [start, end) 小时内尝试
+  work_hour_start: 9
+  work_hour_end: 22
+  timezone: "Asia/Shanghai"
+
+pushplus:
+  api_url: "https://www.pushplus.plus/send"
+  timeout: 10
+  wechat_enabled: true        # 渠道开关也可用 Secrets 环境变量覆盖
+  qq_enabled: false
+  sms_enabled: false
+  failure_notify_threshold: 12   # 连续失败 12 次（约 2 小时）才发失败通知
+
+state:
+  enable_git_commit: true         # 是否通过 GitHub API 提交 state 文件
+  enable_disable_workflow: true   # 成功后是否禁用 workflow（主停止方案）
+  heartbeat_on_failure: true      # 失败时是否维护心跳（防 60 天禁用）
+  heartbeat_commit_hours: 6.0     # 心跳 commit 间隔（小时）
+  state_file: "state/grab_state.json"
+
+output:
+  log_dir: "logs"
+  screenshot_dir: "screenshots"
+  keep_screenshots: 5
