@@ -42,10 +42,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # 仅需要真实浏览器的模式才安装：
+      # test-notify 只发通知、check-only 只做轻量 requests 探测，都不启动浏览器，
+      # 跳过可省下首次约 40s 的 Chromium 下载。
       - name: Install Playwright Chromium
+        if: inputs.mode == 'dry-run' || inputs.mode == 'full'
         run: |
           playwright install chromium
-          sudo playwright install-deps chromium
+          # sudo 会重置 PATH 为系统 secure_path，找不到 hostedtoolcache 里的 playwright，
+          # 必须用 env 显式把当前 PATH 传进去；runner 本身已预装大部分系统库，
+          # 故 deps 失败只告警不阻断（真正缺库会在启动浏览器时精确报错）。
+          sudo env "PATH=$PATH" "$(command -v playwright)" install-deps chromium \
+            || echo "::warning::install-deps 未完成（runner 通常已预装依赖），继续执行"
 
       - name: Run (dry-run)
         if: inputs.mode == 'dry-run'
