@@ -53,6 +53,10 @@ jobs:
           ABECLOUD_USERNAME: ${{ secrets.ABECLOUD_USERNAME }}
           ABECLOUD_PASSWORD: ${{ secrets.ABECLOUD_PASSWORD }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          # 渠道开关：必须与 grab.yml 保持一致，否则测试环境与定时抢购行为不一致
+          PUSHPLUS_WECHAT_ENABLED: ${{ vars.PUSHPLUS_WECHAT_ENABLED }}
+          PUSHPLUS_QQ_ENABLED: ${{ vars.PUSHPLUS_QQ_ENABLED }}
+          PUSHPLUS_SMS_ENABLED: ${{ vars.PUSHPLUS_SMS_ENABLED }}
         run: python main.py --dry-run --verbose
 
       - name: Run (check-only)
@@ -61,6 +65,10 @@ jobs:
           ABECLOUD_USERNAME: ${{ secrets.ABECLOUD_USERNAME }}
           ABECLOUD_PASSWORD: ${{ secrets.ABECLOUD_PASSWORD }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          # 渠道开关：必须与 grab.yml 保持一致，否则测试环境与定时抢购行为不一致
+          PUSHPLUS_WECHAT_ENABLED: ${{ vars.PUSHPLUS_WECHAT_ENABLED }}
+          PUSHPLUS_QQ_ENABLED: ${{ vars.PUSHPLUS_QQ_ENABLED }}
+          PUSHPLUS_SMS_ENABLED: ${{ vars.PUSHPLUS_SMS_ENABLED }}
         run: python main.py --check-only --verbose
 
       - name: Run (full)
@@ -69,12 +77,20 @@ jobs:
           ABECLOUD_USERNAME: ${{ secrets.ABECLOUD_USERNAME }}
           ABECLOUD_PASSWORD: ${{ secrets.ABECLOUD_PASSWORD }}
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          # 渠道开关：必须与 grab.yml 保持一致，否则测试环境与定时抢购行为不一致
+          PUSHPLUS_WECHAT_ENABLED: ${{ vars.PUSHPLUS_WECHAT_ENABLED }}
+          PUSHPLUS_QQ_ENABLED: ${{ vars.PUSHPLUS_QQ_ENABLED }}
+          PUSHPLUS_SMS_ENABLED: ${{ vars.PUSHPLUS_SMS_ENABLED }}
         run: python main.py --verbose
 
       - name: Run (test-notify)
         if: inputs.mode == 'test-notify'
         env:
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          # 渠道开关：必须与 grab.yml 保持一致，否则测试环境与定时抢购行为不一致
+          PUSHPLUS_WECHAT_ENABLED: ${{ vars.PUSHPLUS_WECHAT_ENABLED }}
+          PUSHPLUS_QQ_ENABLED: ${{ vars.PUSHPLUS_QQ_ENABLED }}
+          PUSHPLUS_SMS_ENABLED: ${{ vars.PUSHPLUS_SMS_ENABLED }}
         run: python main.py --test-notify
 
       - name: Upload screenshots
